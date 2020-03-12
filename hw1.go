@@ -3,23 +3,40 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
-// В первом параметре передавать путь к файлу, во втором название выходного файла
+// В первом параметре передавать название выходного файла, дальше названия входных файлов
 
 func main()  {
-	data, err := ioutil.ReadFile(os.Args[1])
-	check(err)
 
-	var str string = string(data)
-	var s []string = strings.Split(str, "\n")
-	docs := make([][]string, len(s))
+	var args []string = os.Args
+	if len(args) < 3 {
+		log.Fatal("No input data")
+	}
 
-	for i := 0; i < len(s); i++ {
-		docs[i] = strings.Split(s[i], " ")
+	var outFile string = args[1]
+	var argLen int = len(args) - 2
+	inputFile := make([]string, argLen)
+	str := make([]string, argLen)
+
+	for i := 0; i < argLen; i++ {
+		inputFile[i] = args[i + 2]
+	}
+
+	for i := 0; i < argLen; i++ {
+		data, err := ioutil.ReadFile(inputFile[i])
+		check(err)
+		str[i] = string(data)
+	}
+
+	docs := make([][]string, len(str))
+
+	for i := 0; i < len(str); i++ {
+		docs[i] = strings.Fields(str[i])
 	}
 
 	m := make(map[string]map[int]int)
@@ -37,9 +54,9 @@ func main()  {
 		}
 	}
 
-	fmt.Println(s)
+	fmt.Println(str)
 
-	file, err := os.Create(os.Args[2])
+	file, err := os.Create(outFile)
 	check(err)
 	defer file.Close()
 
@@ -59,6 +76,6 @@ func main()  {
 
 func check(e error) {
 	if e != nil {
-		panic(e)
+		log.Fatal(e)
 	}
 }
